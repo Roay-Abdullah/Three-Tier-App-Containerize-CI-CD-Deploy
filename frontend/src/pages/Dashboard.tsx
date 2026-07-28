@@ -16,10 +16,10 @@ const Dashboard = () => {
     loadTasks();
   }, []);
 
-  const handleCreate = async (data: { title: string; description?: string; projectId?: string }) => {
-    await tasksApi.create(data);
-    loadTasks();
-  };
+const handleCreate = async (data: { title: string; description?: string; projectId?: string }) => {
+  await tasksApi.create({ ...data, status: 'TODO' });
+  loadTasks();
+};
 
   const handleStatusToggle = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'DONE' ? 'TODO' : 'DONE';
