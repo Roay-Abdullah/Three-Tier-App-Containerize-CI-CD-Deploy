@@ -1,0 +1,19 @@
+[services]
+  [services.backend]
+    build = "backend"
+    port = 5000
+    [services.backend.env]
+      DATABASE_URL = "${{ Postgres.DATABASE_URL }}"
+      JWT_SECRET = "${{ secrets.JWT_SECRET }}"
+    [services.backend.deploy]
+      preDeploy = "npx prisma migrate deploy"
+
+  [services.frontend]
+    build = "frontend"
+    port = 80
+    [services.frontend.env]
+      VITE_API_URL = "${{ backend.PUBLIC_URL }}"
+
+[plugins]
+  [plugins.postgres]
+    type = "postgres"
