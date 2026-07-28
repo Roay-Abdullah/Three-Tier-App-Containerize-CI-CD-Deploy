@@ -37,7 +37,7 @@ jobs:
           npx prisma migrate deploy
           npm test
         env:
-          DATABASE_URL: postgresql://postgres:testpass@localhost:5432/postgres?schema=public
+          DATABASE_URL: postgresql://postgres:testpass@postgres:5432/postgres?schema=public
 
       - name: Frontend build check
         run: |
