@@ -4,6 +4,7 @@ COPY package*.json ./
 COPY prisma ./prisma
 RUN npm ci
 COPY . .
+RUN npm install --save-dev @types/cors
 RUN npm run build
 
 FROM node:20-alpine
