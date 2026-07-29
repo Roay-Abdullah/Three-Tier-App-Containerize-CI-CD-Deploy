@@ -102,9 +102,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/app
-            # Pull latest images from ECR
-            docker-compose pull
-            # Restart containers with new images
-            docker-compose up -d --remove-orphans
-            # Clean unused images
+            docker compose pull
+            docker compose up -d --remove-orphans
             docker image prune -f
