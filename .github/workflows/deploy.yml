@@ -76,24 +76,28 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: three-tier-app-backend
-          IMAGE_TAG: latest   # or ${{ github.sha }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           cd backend
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
       # ---------- BUILD & PUSH FRONTEND ----------
       - name: Build, tag, push frontend
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: three-tier-app-frontend
-          IMAGE_TAG: latest
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           cd frontend
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-      # ---------- DEPLOY TO EC2 (SSH) ----------
+      # ---------- DEPLOY TO EC2 (SSH), WITH AUTO-ROLLBACK ----------
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -101,11 +105,8 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            set -e
             cd ~/app
-            aws ecr get-login-password --region us-east-1 | \
-              docker login --username AWS --password-stdin \
-              291807116331.dkr.ecr.us-east-1.amazonaws.com
-            docker compose pull
-            docker compose up -d --remove-orphans
-            docker image prune -f
+            git fetch origin main
+            git reset --hard origin/main
+            chmod +x deploy/deploy.sh
+            ./deploy/deploy.sh ${{ github.sha }}
